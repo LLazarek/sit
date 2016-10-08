@@ -42,6 +42,11 @@ class Fun:
     def output_type(self, new_output_type):
         self._output_type = new_output_type
 
+    def __eq__(self, other):
+        return (self.name == other.name and self.arg_names == other.arg_names \
+                and self.arg_types == other.arg_types and \
+                self.output_type == other.output_type)
+
 
 class Test:
     def __init__(self, Type, fun, inputs, output, setup):
@@ -106,19 +111,29 @@ def parse_func_args_into_lists(func_args_str):
     for argument in arguments:
         regex_result = re.search("(.*[^A-Za-z])([A-Za-z0-9_][A-Za-z0-9_]*)",
                                  argument)
-        arg_types.append(regex_result.group(1).lstrip())
-        arg_names.append(regex_result.group(2))
+        arg_types.append(regex_result.group(1).strip())
+        arg_names.append(regex_result.group(2).strip())
         
     return (arg_names, arg_types)
 
 def extract_function_info(fun_signature_str):
-    regex_result = re.search("([^ ]*  *)?([^ ][^ ]*)  *([^ ][^ ]*)\(([^\)]*)\)",
+    regex_result = re.search("^\s*([^ ]+\s+)?([^ ]+)\s+([^ ]+)\(([^\)]*)\)",
                              fun_signature_str)
-    return_type = regex_result.group(2)
-    func_name = regex_result.group(3)
-    func_args = regex_result.group(4)
+    # regex_result = re.search\
+    #                ("[a-zA-Z_]* *([a-zA-Z0-9_]+) +([a-zA-Z0-9_]+)\((.*)\)",
+    #                 fun_signature_str)
+    return_type = regex_result.group(2).strip()
+    func_name = regex_result.group(3).strip()
+    func_args = regex_result.group(4).strip()
     func_args_pair = parse_func_args_into_lists(func_args)
-    return Fun(func_name, func_args_pair[0], func_args_pair[1], return_type)
+    # print("%s -> %s %s(%s) : %s/%s" %(fun_signature_str,
+    #                                   return_type, func_name, func_args,
+    #                                   func_args_pair[0], func_args_pair[1]))
+    # print("%s : %s/%s : %s" %(func_name,
+    #                           func_args_pair[0],
+    #                           func_args_pair[1],
+    #                           [return_type]))
+    return Fun(func_name, func_args_pair[0], func_args_pair[1], [return_type])
 
 
 
@@ -304,3 +319,20 @@ if TEST:
     test(extract_test_output("// >>> test-exn: 2 @ std::string \"err msg\""),
          ["std::string", "\"err msg\""])
 
+
+    print("========== test extract function info ==========")
+    test(extract_function_info("int fac_iter(int n){"),
+                      Fun("fac_iter",
+                          ["n"],
+                          ["int"],
+                          ["int"]))
+    test(extract_function_info("int fac_iter1(int res, int n){"),
+         Fun("fac_iter1",
+             ["res", "n"],
+             ["int", "int"],
+             ["int"]))
+    test(extract_function_info("int fac_iter1(int res1, int n1_res){"),
+         Fun("fac_iter1",
+             ["res1", "n1_res"],
+             ["int", "int"],
+             ["int"]))
