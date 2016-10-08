@@ -11,7 +11,7 @@
 // >>> test: 3 @ 6
 // >>> test: 7 @ 5040
 // >>> test: 10 @ 3628800
-int fac(int n){
+static int fac(int n){
   if (n < 0){
     throw "error"
   }
@@ -38,6 +38,7 @@ int fac_iter(int n){
   return fac_iter1(1, n);
 }
 
+// >>> test: 1 @ 2
 int fac_iter1(int res, int n){
   if (n < 3){
     return 2*res;
@@ -55,6 +56,7 @@ int fac_iter1(int res, int n){
 // >>> test: 5 @ 5
 // >>> test: 10 @ 55
 // >>> test: 15 @ 610
+// >>> test-input: x y z s w @ (x=5) (obj=obj(*a)) @ 5 3 2 3 5
 int fib(int n){
   if (n < 1){
     return 0;
@@ -66,6 +68,7 @@ int fib(int n){
 }
 
 // >>> test-print: -5 @ "error"
+// >>> test-print: 4358444 @ "hello"
 // >>> test-input: x y z @ (x=5) (*x=5) @ 5 3 2
 int fib_iter(int n){
   if (n < 0){
