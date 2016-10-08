@@ -1,1 +1,15 @@
 SIT: Simple Interactive Testing
+
+404 Team_Name_Not_Found
+
+Hack UMass 2016
+
+----------------------------------------------------------------
+
+Module 1: Function and Test Parsing             Owen
+
+Module 2: Data Structure Conversion             Lukas
+
+Module 3: Test File Creation                    Chris
+
+Module 4: Interactive Testing                   Gordon
