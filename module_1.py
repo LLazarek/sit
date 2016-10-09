@@ -1,6 +1,7 @@
-#!/bin/python3   
+#!/bin/python3
 #   parse-grab.txt
-#   This file looks for the SIT pattern in a comment above a function
+#   This file looks for the every test pattern and following
+#   function signature.
 #   @Author Owen McCormack
 #   @Date 10/8/16 12:13AM
 
@@ -42,8 +43,7 @@ def parse_code():
 
         # Regex to grab each test
         test_grab = re.search('>>> test(-[^: ]*)?: [\-\w\. ]* @ .*',line)
-        inter_grab = re.search('>>> test-interactive',line) 
-        input_grab = re.search('>>> test-input: [^@]* @ .*',line)
+        inter_grab = re.search('>>> test-interactive',line)
 
         # check regex for a function signature, if none keep moving down
         if found_test is 1:
@@ -66,10 +66,5 @@ def parse_code():
         if inter_grab is not None:
             funct_tests.append(inter_grab.group(0))
             found_test = 1
-
-        # grab input test seperately
-        # if input_grab is not None:
-        #     funct_tests.append(input_grab.group(0))
-        #     found_test = 1
 
     return (filename, pair_list)
