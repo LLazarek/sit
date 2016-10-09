@@ -1,9 +1,30 @@
+##
+ # @copyright:  2016
+ #
+ # @File Name:  module_3.py
+ # @Author:     Christopher Gibbs
+ # @Date:       10/8/16
+ # @Purpose:    This module is responsible for creating a C++ file that contains
+ #              the test case code for the commented functions in the original
+ #              C++ file. The make_test_file function is defined here, which
+ #              takes in a list of Test object from module_2 and a string
+ #              representing the name of the original file and outputs
+ #              nothing. It instead writes code into a new file.
+##
+
 # Lukas' module which defines the Test and Fun
 import module_2
 
-# (listof Tests) -> Nothing
-# Writes testing code to an output file corresponding to the given
-# Tests
+##
+ # @fun_file_name:
+ #              The name of the original C++ file that the functions were
+ #              written in.
+ # @test_list:  The list of Test objects that were created from parsing the
+ #              original file.
+ # @return:     Nothing.
+ # @Purpose:    Writes testing code to an output file corresponding to the given
+ #              Tests.
+##
 def make_test_file(fun_file_name, test_list):
         # Remove .cpp from end of fun_file_name if it exists
         if fun_file_name.endswith('.cpp'):
