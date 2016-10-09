@@ -109,6 +109,14 @@ E.g:
   - For example, a function with the signature =int foo(int x)= may specify the value of argument =x= by providing the setup command: =(x = 5)=
 - Be aware of the code specified in setup commands: invalid, erroneous, or illogical setup commands may prevent compilation of the entire testing suite
 
+* Invocation
+: python3 sit.py <source_file>
+Invoke sit by providing it with a source file named "source_file.cpp" and it will produce another source file named "source_file_tests.cpp" in the same directory. This contains the testing suite for the original source file.
+
+* Demo Instructions
+Included in this repository is an example source code file (example_code.cpp) that demonstrates each form of syntax in a practical setting. To run sit on the file and compile the resulting test suite, simply invoke
+: make sit
+in the root directory of the repository. Doing so will create an executable file named "test" which may be invoked to run the testing suite corresponding to the example code file. Two of the tests in example_code.cpp are deliberately designed to fail so as to display the format used when tests fail.
 
 * Future features
 - =test-interactive=: Interactive unit test generation

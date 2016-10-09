@@ -83,6 +83,7 @@ int fib(int n){
 
 // >>> test-exn: -5 @ cstr "error"
 // >>> test-exn: -1000 @ cstr "error"
+// >>> test-exn: n @ (n = 0) @ cstr "error"
 // >>> test: 0 @ 0
 // >>> test: 1 @ 1
 // >>> test: 2 @ 1
@@ -101,8 +102,10 @@ int fib_iter(int n){
   return fib_iter1(0, 1, n);
 }
 
-// >>> test-interactiv
-//sdfjosodijfsodijf
+/*
+  >>> test: 2 b 1 @ (b = 1) @ 1
+  >>> test: 0 1 n @ (n = 5) @ 5
+ */
 int fib_iter1(int a, int b, int n){
   if (n < 2){
     return b;

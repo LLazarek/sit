@@ -51,9 +51,8 @@ def make_test_file(fun_file_name, test_list):
     # bool value that stores whether the test passed or failed
     test_file.write('bool result, test_suite_result = true;\n')
     test_file.write('std::vector<std::string> fail_vec;\n')
-    test_file.write('bool has_message;\nstd::string exn_mess;\n\n')
-    #test_file.write('#include <boost/test/unit_test.hpp>\n')
-    #test_file.write('#include <boost/test/output_test_stream.hpp>\n\n')
+    test_file.write('bool has_message;\nstd::string exn_mess;\n')
+    test_file.write('std::string output_str = "";\n\n')
     # Counter for number of tests ran
     test_num = 1
     # For each test, wrap in a try-catch for exceptions, then make function
@@ -123,7 +122,7 @@ def make_test_file(fun_file_name, test_list):
         # TEST-EXN
         elif test.Type == module_2.Test_Type['test-exn']:
             exn_type = test.output[0]
-            exn_message = 'Dummy value'
+            exn_message = '"Dummy value"'
             output_str = ""
             test_file.write('has_message = true;\n')
             if (len(test.output) == 2):
@@ -133,6 +132,7 @@ def make_test_file(fun_file_name, test_list):
                 test_file.write('has_message = false;\n')
             test_file.write('exn_mess = ' + exn_message + ';\n')
             # Try block
+            test_file.write('output_str = "";\n')
             test_file.write('try\n')
             test_file.write('{\n')
             count = 0
@@ -160,7 +160,7 @@ def make_test_file(fun_file_name, test_list):
             # Function
             test_file.write(test.fun.name + '(' + input_string + ');\n')
             test_file.write('\tresult = false;\n')
-            output_str = "passed without exception"
+            test_file.write('\toutput_str = " passed without exception";\n')
             test_file.write('}\n')
             # Catch block
             # cstr == c string == const char*
@@ -174,9 +174,10 @@ def make_test_file(fun_file_name, test_list):
             test_file.write('\t\telse\n\t\t{\n')
             test_file.write('\t\t\tstd::cout << ' + '"Exception caught: "' +
                             ' << e << std::endl;\n')
-            test_file.write('\t\t\tresult = false;\n\t\t}\n')
-            output_str = "threw right exception but wrong message"
-            test_file.write('\telse\n')
+            test_file.write('\t\t\tresult = false;\n')
+            test_file.write('\toutput_str = "threw right exception but ' + \
+                             'wrong message";\n')
+            test_file.write('\t\t}\n\telse\n')
             test_file.write('\t\tresult = true;\n')
             test_file.write('}\n')
             # Catch block
@@ -185,7 +186,7 @@ def make_test_file(fun_file_name, test_list):
             test_file.write('\tstd::cout << "Exception caught: "' +
                             ' << e << std::endl;\n')
             test_file.write('\tresult = false;\n')
-            output_str = "threw wrong exception"
+            test_file.write('\toutput_str = "threw wrong exception";\n')
             test_file.write('}\n')
             test_file.write('catch (...)\n')
             test_file.write('{\n')
@@ -196,9 +197,9 @@ def make_test_file(fun_file_name, test_list):
             test_file.write('{\n')
             test_file.write('\ttest_suite_result = false;\n')
             test_file.write('\tfail_vec.push_back("' + test.fun.name + '(' +
-                            input_string + ')  ' + output_str + '");\n')
+                            input_string + ')" + output_str);\n')
             test_file.write('}\n\n')
-       # # TEST-PRINT
+       # # TEST-PRINT - keeping for future implementation
        # elif test.Type == module_2.Test_Type['test-print']
        #         expect_out = test.output[0]
        #         # Try block
