@@ -1,7 +1,13 @@
-#+TITLE: SIT: Simple Interactive Testing
+SIT: #+TITLE: Simple Interactive Testing
 #+AUTHOR: Team: 404 Team_Name_Not_Found
-Hack UMass 2016
-Team Members: Lukas Lazarek, Owen McCormack, Gordon Wu, Christopher Gibbs
+
+Hack UMass IV, 2016
+
+Team Members:
+- Lukas Lazarek
+- Owen McCormack
+- Gordon Wu
+- Christopher Gibbs
 
 
 * Summary
@@ -9,24 +15,24 @@ Effective testing requires time and planning to adequately check for a
 code correctness. Strong design principals require developers to
 determine test cases before, during, and after the development
 process.
-SIT (Simple Interactive Testing) was created with the goal of easing
-and simplifying unit testing, removing all but the most insignificant
-barriers of entry.
+Simple Interactive Testing (hereafter referred to as "sit") was
+created with the goal of easing and simplifying unit testing, removing
+all but the most insignificant barriers of entry.
 
-SIT is inspired partially by Doxygen, a tool that generates
+Sit is inspired partially by Doxygen, a tool that generates
 documentation, and the Boost Unit Test Framework library, a set of
-tools for testing code and constructing testing suites in C++. SIT
+tools for testing code and constructing testing suites in C++. Sit
 generates unit tests for C++ functions from formatted documentation
 comments above a function definition. Each comment specifies a type of
 test to run along with relevant input and expected output information
-in a compact and succinct format. Invoking SIT with a C++ code file
-produces a corresponding file containing test code, ready to be run
-and test your code.
+in a compact and succinct format. Invoking sit with a C++ code file
+produces a corresponding file containing test code, ready to test your
+code.
 
 * Example
 Assume that you have a function named addTwoInts that
 takes in two integers and returns their sum. In order to test this
-function with SIT, you could add a comment above its definition similar
+function with sit, you could add a comment above its definition similar
 to this:
 
 #+BEGIN_SRC C++
@@ -40,7 +46,7 @@ In the sample above, ">>>" is used to indicate the start of a sit test
 case comment. After that is the keyword, shown to be "test" here,
 which tells what type of test to create. Next are the input arguments
 for the test case, and, separated by an '@' is the expected output.
-Therefore, at its core, SIT creates this test by checking that the
+Therefore, at its core, sit creates this test by checking that the
 following statement is true:
 
 : addTwoInts(7, 20) == 27
@@ -49,12 +55,25 @@ following statement is true:
 
 ** Types of Tests
 Sit is capable of running three different types of tests depending on
-the keyword invoked. The first is "test", which takes in values for the
-inputs and the expected output of the function after passing those
-values. Next is "test-exn", which checks that the tested function invocation raises a given exception.This includes the ability to specify what type of exception should be expected as well as even what the expected error message should be. Finally, "test-input" may be used to test the side-effects of function invocation.It takes in the input values that
-you would like to check after calling the function, any initial
-setup conditions, and the expected values of the inputs once
-the function has been executed. This feature allows sit to test functions that are not purely functional, an important feature in a language as heavily object-oriented as C++. By specifying both what exactly to inspect and allowing arbitrary commands to precede execution, sit attains a high level of flexibility that allows developers to easily test procedures whose functionality extends beyond explicit input and output.
+the keyword invoked. The first is "test", which takes in values for
+the inputs and the expected output of the function after passing those
+values.
+
+Next is "test-exn", which checks that the tested function invocation
+raises a given exception.This includes the ability to specify what
+type of exception should be expected as well as even what the expected
+error message should be.
+
+Finally, "test-input" may be used to test the side-effects of function
+invocation.It takes in the input values that you would like to check
+after calling the function, any initial setup conditions, and the
+expected values of the inputs once the function has been executed.
+This feature allows sit to test functions that are not purely
+functional, an important feature in a language as heavily
+object-oriented as C++. By specifying both what exactly to inspect and
+allowing arbitrary commands to precede execution, sit attains a high
+level of flexibility that allows developers to easily test procedures
+whose functionality extends beyond explicit input and output.
 
 
 *** Syntax specification
@@ -87,4 +106,16 @@ E.g:
 ***** Notes
 - Setup commands are most useful in combination with these test types
 - Arguments to the the function may only be specified via setup commands, and argument values may be set by simply setting the argument as if it were a variable.
+  - For example, a function with the signature =int foo(int x)= may specify the value of argument =x= by providing the setup command: =(x = 5)=
 - Be aware of the code specified in setup commands: invalid, erroneous, or illogical setup commands may prevent compilation of the entire testing suite
+
+
+* Future features
+- =test-interactive=: Interactive unit test generation
+  - Analyze function arguments to predict edge and standard cases
+  - Prompt for expected behavior in those cases
+  - Generate tests based on such interactive sessions
+- =test-prop=: Property based testing
+  - In the spirit of QuickCheck, specify general properties or relationships that your function should hold
+  - Automatically generate large suites testing those properties
+
