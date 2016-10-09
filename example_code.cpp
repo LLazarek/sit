@@ -70,6 +70,7 @@ int fac_iter1(int res, int n){
 // >>> test: 5 @ 5
 // >>> test: 10 @ 55
 // >>> test: 15 @ 610
+// >>> test: 16 @ 16
 int fib(int n){
   if (n < 1){
     return 0;
