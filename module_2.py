@@ -22,7 +22,7 @@ class Fun:
     def arg_names(self):
         return self._arg_names
 
-    @name.setter
+    @arg_names.setter
     def arg_names(self, new_arg_names):
         self._arg_names = new_arg_names
 
@@ -30,7 +30,7 @@ class Fun:
     def arg_types(self):
         return self._arg_types
 
-    @name.setter
+    @arg_types.setter
     def arg_types(self, new_arg_types):
         self._arg_types = new_arg_types
 
@@ -38,7 +38,7 @@ class Fun:
     def output_type(self):
         return self._output_type
 
-    @name.setter
+    @output_type.setter
     def output_type(self, new_output_type):
         self._output_type = new_output_type
 
@@ -107,9 +107,11 @@ def parse_func_args_into_lists(func_args_str):
     arg_types = []
     # split on comma
     arguments = func_args_str.split(',')
+    print("==%s==" % arguments)
     # for each argument
     for argument in arguments:
         regex_result = re.search("(.*[^A-Za-z])([A-Za-z0-9_][A-Za-z0-9_]*)",
+                                 "()"
                                  argument)
         arg_types.append(regex_result.group(1).strip())
         arg_names.append(regex_result.group(2).strip())
@@ -119,21 +121,11 @@ def parse_func_args_into_lists(func_args_str):
 def extract_function_info(fun_signature_str):
     regex_result = re.search("^\s*([^ ]+\s+)?([^ ]+)\s+([^ ]+)\(([^\)]*)\)",
                              fun_signature_str)
-    # regex_result = re.search\
-    #                ("[a-zA-Z_]* *([a-zA-Z0-9_]+) +([a-zA-Z0-9_]+)\((.*)\)",
-    #                 fun_signature_str)
     return_type = regex_result.group(2).strip()
     func_name = regex_result.group(3).strip()
     func_args = regex_result.group(4).strip()
     func_args_pair = parse_func_args_into_lists(func_args)
-    # print("%s -> %s %s(%s) : %s/%s" %(fun_signature_str,
-    #                                   return_type, func_name, func_args,
-    #                                   func_args_pair[0], func_args_pair[1]))
-    # print("%s : %s/%s : %s" %(func_name,
-    #                           func_args_pair[0],
-    #                           func_args_pair[1],
-    #                           [return_type]))
-    return Fun(func_name, func_args_pair[0], func_args_pair[1], [return_type])
+    return Fun(func_name, func_args_pair[0], func_args_pair[1], return_type)
 
 
 
@@ -148,12 +140,13 @@ def parse_setup_str_to_list(setup_str):
             if char == '(':
                 if len(paren_stack) == 0:
                     expr_start = pos
-                    paren_stack.append('(')
+                paren_stack.append('(')
             else:
                 if char == ')':
-                    if paren_stack.pop() != '(':
-                        print("error")
-                        break
+                    if len(paren_stack) == 0 or paren_stack.pop() != '(':
+                        print("error, invalid expression: %s" % setup_str)
+                        raise "error"
+                    # we check the length again, this time after popping the top
                     if len(paren_stack) == 0:
                         expr_list.append(setup_str[expr_start:(pos + 1)])
                     
@@ -227,112 +220,128 @@ def extract_test_output(test_str):
 
 
 
-# Have:
-# (list of tuples)
-#   Each maps function signature (string) to list of function tests (strings)
 
-list_of_functions = [("int fac(int x)", ["// >>> test: 0 @ 1",
-                                         "// >>> test: 1 @ 1",
-                                         "// >>> test: 2 @ 2"]),
-                     ("int fac-iter(int n)", ["// >>> test: 0 @ 1",
-                                              "// >>> test: 1 @ 1",
-                                              "// >>> test: 2 @ 2"])]
+# (list of tuples of a function signature string mapped to
+# a list of function test strings)
+# ->
+# (listof Tests) 
+def build_test_tree(list_of_functions):
+    list_of_all_tests = []
 
-list_of_functions_in_data_structure = []
-
-
-for function in list_of_functions:
-    fun_info = extract_function_info(function[0])
-    list_of_tests = []
-    for test_str in function[1]:
-        test_type = extract_test_type(test_str)
-        if test_type is Test_Type["test-interactive"]:
-            list_of_tests.append(Test(test_type,
-                                      fun_info,
-                                      [], # input
-                                      [], # output
-                                      [])) # setup
-        if test_type is Test_Type["test-exn"]:
-            list_of_tests.append(Test(test_type,
-                                      fun_info,
-                                      extract_test_inputs(test_str), # input
-                                      [], # output
-                                      extract_test_setup_code(test_str))) #setup
-        else:
-            list_of_tests.append(Test(test_type,
-                                      fun_info, 
-                                      extract_test_inputs(test_str), # input
-                                      extract_test_output(test_str), #output
-                                      extract_test_setup_code(test_str))) #setup
-            list_of_functions_in_data_structure.append((fun_info,
-                                                        list_of_tests))
+    for function in list_of_functions:
+        fun_info = extract_function_info(function[0])
+        list_of_tests = []
+        for test_str in function[1]:
+            test_type = extract_test_type(test_str)
+            if test_type is Test_Type["test-interactive"]:
+                test = Test(test_type,
+                            fun_info,
+                            [], # input
+                            [], # output
+                            []) # setup
+                list_of_tests.append(test) 
+            elif test_type is Test_Type["test-exn"]:
+                test = Test(test_type,
+                            fun_info,
+                            extract_test_inputs(test_str), # input
+                            extract_test_output(test_str), #output
+                            extract_test_setup_code(test_str)) #setup
+                list_of_tests.append(test)
+            else:
+                test = Test(test_type,
+                            fun_info, 
+                            extract_test_inputs(test_str), # input
+                            extract_test_output(test_str), #output
+                            extract_test_setup_code(test_str)) # setup
+                list_of_tests.append(test)
+                
+        list_of_all_tests.extend(list_of_tests)
+        
+    return list_of_all_tests
 
 
 ############################## Testing ##############################
-TEST = True
-if TEST:
-    def test(test_expr, expected_result):
-        if test_expr == expected_result:
-            print("Test PASS")
-        else:
-            print("Test FAIL")
-            assert False
-            print("======== test type extraction =========")
-            test(extract_test_type("// >>> test: fijodsijf"),
-                 Test_Type["test"])
-            test(extract_test_type("// >>> test-exn: sdoifjsidojf"),
-                 Test_Type["test-exn"])
-            test(extract_test_type("// >>> test-input: sfdhudfihg"),
-                 Test_Type["test-input"])
-            test(extract_test_type("// >>> test-print: dsiojfosidj"),
-                 Test_Type["test-print"])
-            test(extract_test_type("// >>> test-interactive"),
-                 Test_Type["test-interactive"])
+if __name__ == '__main__':
+    TEST = True
+    if TEST:
+        list_of_functions = [("int fac(int x)", ["// >>> test: 0 @ 1",
+                                                 "// >>> test: 1 @ 1",
+                                                 "// >>> test: 2 @ 2"]),
+                             ("int fac-iter(int n)", ["// >>> test: 0 @ 1",
+                                                      "// >>> test: 1 @ 1",
+                                                      "// >>> test: 2 @ 2"])]
+        build_test_tree(list_of_functions)
+        def test(test_expr, expected_result):
+            if test_expr == expected_result:
+                print("Test PASS")
+            else:
+                print("Test FAIL")
+                assert False
+                print("======== test type extraction =========")
+                test(extract_test_type("// >>> test: fijodsijf"),
+                     Test_Type["test"])
+                test(extract_test_type("// >>> test-exn: sdoifjsidojf"),
+                     Test_Type["test-exn"])
+                test(extract_test_type("// >>> test-input: sfdhudfihg"),
+                     Test_Type["test-input"])
+                test(extract_test_type("// >>> test-print: dsiojfosidj"),
+                     Test_Type["test-print"])
+                test(extract_test_type("// >>> test-interactive"),
+                     Test_Type["test-interactive"])
 
-    print("======== test extract test inputs ==========")
-    test(extract_test_inputs("// >>> test: 1 @ 11"), ["1"])
-    test(extract_test_inputs("// >>> test: 1 2 3 @ 11 12 13"), ["1", "2", "3"])
-    test(extract_test_inputs("// >>> test-exn: 1 2 @ std::string \"error\""),
-         ["1", "2"])
-    test(extract_test_inputs("// >>> test-input: *x **p " +
-                             "@ (y = 5) (*x = &y) (**p = 0) @ 5 0"),
-         ["*x", "**p"])
-
-    print("============ test extract setup code ===========")
-    test(extract_test_setup_code("// >>> test-input: *x **p " +
+        print("======== test extract test inputs ==========")
+        test(extract_test_inputs("// >>> test: 1 @ 11"), ["1"])
+        test(extract_test_inputs("// >>> test: 1 2 3 @ 11 12 13"), ["1", "2", "3"])
+        test(extract_test_inputs("// >>> test-exn: 1 2 @ std::string \"error\""),
+             ["1", "2"])
+        test(extract_test_inputs("// >>> test-input: *x **p " +
                                  "@ (y = 5) (*x = &y) (**p = 0) @ 5 0"),
-         ["(y = 5)", "(*x = &y)", "(**p = 0)"])
-    test(extract_test_setup_code("// >>> test: 1 @ 2"), [])
-    test(extract_test_setup_code("// >>> test: 1 @ (x = 5) @ 2"),
-         ["(x = 5)"])
+             ["*x", "**p"])
+
+        print("============ test extract setup code ===========")
+        test(extract_test_setup_code("// >>> test-input: *x **p " +
+                                     "@ (y = 5) (*x = &y) (**p = 0) @ 5 0"),
+             ["(y = 5)", "(*x = &y)", "(**p = 0)"])
+        test(extract_test_setup_code("// >>> test: 1 @ 2"), [])
+        test(extract_test_setup_code("// >>> test: 1 @ (x = 5) @ 2"),
+             ["(x = 5)"])
 
 
-    print("========== test extract output ==========")
-    test(extract_test_output("// >>> test: 1 @ 2"), ["2"])
-    test(extract_test_output("// >>> test: 1 2 3 @ 4"), ["4"])
-    test(extract_test_output("// >>> test-input: **x, *x, p " +
-                             "@ (x = 5) (y + 5) (**p = &x) @ 5 2 3"),
-         ["5", "2", "3"])
-    test(extract_test_output("// >>> test-print: 2 @ (some setup) " +
-                             "@ \"yo\" std::string"),
-         ["\"yo\"", "std::string"])
-    test(extract_test_output("// >>> test-exn: 2 @ std::string \"err msg\""),
-         ["std::string", "\"err msg\""])
+        print("========== test extract output ==========")
+        test(extract_test_output("// >>> test: 1 @ 2"), ["2"])
+        test(extract_test_output("// >>> test: 1 2 3 @ 4"), ["4"])
+        test(extract_test_output("// >>> test-input: **x, *x, p " +
+                                 "@ (x = 5) (y + 5) (**p = &x) @ 5 2 3"),
+             ["5", "2", "3"])
+        test(extract_test_output("// >>> test-print: 2 @ (some setup) " +
+                                 "@ \"yo\" std::string"),
+             ["\"yo\"", "std::string"])
+        test(extract_test_output("// >>> test-exn: 2 @ std::string \"err msg\""),
+             ["std::string", "\"err msg\""])
 
 
-    print("========== test extract function info ==========")
-    test(extract_function_info("int fac_iter(int n){"),
-                      Fun("fac_iter",
-                          ["n"],
-                          ["int"],
-                          ["int"]))
-    test(extract_function_info("int fac_iter1(int res, int n){"),
-         Fun("fac_iter1",
-             ["res", "n"],
-             ["int", "int"],
-             ["int"]))
-    test(extract_function_info("int fac_iter1(int res1, int n1_res){"),
-         Fun("fac_iter1",
-             ["res1", "n1_res"],
-             ["int", "int"],
-             ["int"]))
+        print("========== test extract function info ==========")
+        test(extract_function_info("int fac_iter(int n){"),
+                          Fun("fac_iter",
+                              ["n"],
+                              ["int"],
+                              "int"))
+        test(extract_function_info("int fac_iter1(int res, int n){"),
+             Fun("fac_iter1",
+                 ["res", "n"],
+                 ["int", "int"],
+                 "int"))
+
+        f = extract_function_info("int fac_iter1(int res1, int n1_res){")
+        print("%s\n%s\n%s\n%s" %(f.name, f.arg_names, f.arg_types, f.output_type))
+        test(f,
+             Fun("fac_iter1",
+                 ["res1", "n1_res"],
+                 ["int", "int"],
+                 "int"))
+
+        test(extract_function_info("int fac(int n){"),
+             Fun(name="fac",
+                arg_names=["n"],
+                arg_types=["int"],
+                output_type="int"))
