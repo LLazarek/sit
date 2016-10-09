@@ -1,11 +1,6 @@
-CC = g++
+Compile: example_code_tests.cpp
+	g++ example_code_tests.cpp -o test
 
-Compile: example_code.cpp
-	$(CC) example_code.cpp -o test
-
-Sit: sit.py
+sit: sit.py
 	python3 sit.py example_code.cpp 
 	$(MAKE) Compile
-
-clean:
-	rm -f *.o *~ test
