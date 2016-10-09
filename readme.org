@@ -1,15 +1,60 @@
 SIT: Simple Interactive Testing
 
-404 Team_Name_Not_Found
+Team: 404 Team_Name_Not_Found
+
+Members: Lukas Lazarek, Owen McCormack, Gordon Wu, Christopher Gibbs
 
 Hack UMass 2016
 
-----------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-Module 1: Function and Test Parsing             Owen
+Summary:
+        Like any other code, unit testing takes time and planning to fully
+        check for a function's correctness. Often times, good functional design
+        requires a programmer to think of test cases while designing software.
+        SIT, or Simple Interactive Testing, was created with one goal in mind:
+        to make it easier to write unit tests for your code.
 
-Module 2: Data Structure Conversion             Lukas
+        Inspired by Doxygen, a tool that creates HTML documentation, and the
+        Boost Unit Test Framework library, SIT is able to generate unit
+        tests for C++ functions based on the developer's comments. Written in
+        Python, the SIT tool reads through a C++ file and looks for formatted
+        comments above a function definition. Each comment will list a type of
+        test to run along with relevant input and expected output information.
+        A new C++ file will then be created with code for unit tests based on
+        this criteria.
 
-Module 3: Test File Creation                    Chris
+Example:
+        Assume that you have a function named addTwoInts that
+        takes in two integers and returns their sum. In order to test this
+        function with SIT, you could add a comment above its definition similar
+        to this:
 
-Module 4: Interactive Testing                   Gordon
+        // >>> test: 7 20 @ 27
+
+        In the sample above, the ">>>" is used to indicate the start of a SIT
+        test case comment. After that is the keyword, shown to be "test" here,
+        which tells what type of test to create. Next are the input arguments
+        for the test case, and, separated by an '@' is the expected output.
+        Therefore, at its core, SIT creates this test by checking that the
+        following statement is true:
+
+        addTwoInts(7, 20) == 27
+
+Quick Tutorial:
+        SIT is capable of running three different types of tests, depending on
+        the keyword used. The first is "test", which takes in values for the
+        inputs and the expected output of the function after passing those
+        values. Next is "test-exn", which checks that an exception is raised
+        by the tested function. This also takes in input values and the type
+        of exception that is expected to be thrown. Also optional is the message
+        of the output exception, which can be used to check that a specific
+        exception was thrown. Finally, "test-input" is used for functions that
+        change input values upon returning. It takes in the input values that
+        you would like to check after calling the function, any initial
+        setup conditions for this, and the expected values of the inputs once
+        the function has returned.
+
+        Syntax is also important with SIT. Each keyword must be followed by a
+        colon, and lists of input/output arguments are separated by the '@'
+        symbol.
