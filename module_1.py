@@ -18,7 +18,8 @@ import copy
 def parse_code():
     # Check for only one input file
     if((len(sys.argv) < 2) or (len(sys.argv) > 2)):
-        print("Invalid input file")
+        print("Incorrect number of arguments, the correct format is python3" +
+              "sit.py then your cpp/cc file.")
 
     # Create tuple for pair list
     pair_list = [];
