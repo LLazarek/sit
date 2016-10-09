@@ -255,16 +255,20 @@ def make_test_file(fun_file_name, test_list):
                                         ' and expected outputs=' +
                                         str(test.output) + '");\n')
                         test_file.write('}\n\n')
+                test_num += 1;
         # All cases done, write final result code
         test_file.write('if(test_suite_result)\n')
-        test_file.write('\tstd::cout << "All tests passed." << std::endl;\n')
+        test_file.write('\tstd::cout << "All ' + test_num\
+                + ' tests passed." << std::endl;\n')
         test_file.write('else\n')
         test_file.write('{\n')
-        test_file.write('\tstd::cout << fail_vec.size() << " tests failed."' +
+        test_file.write('\tstd::cout << fail_vec.size() << " '\
+                        + 'tests failed out of' + test_num + '."' +
                         '<< " The following tests did not pass:" ' +
                         '<< std::endl;\n')
         test_file.write('\tfor (int i = 0; i < fail_vec.size(); ++i)\n\t{\n')
-        test_file.write('\t\tstd::cout << fail_vec[i] << std::endl;\n\t}\n')
+        test_file.write('\t\tstd::cout << "Case " << i << ")\\t" << '\
+                + 'fail_vec[i] << std::endl;\n\t}\n')
         test_file.write('}\n\n')
 
         test_file.write("return 0;}")
