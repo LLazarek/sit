@@ -69,6 +69,28 @@ def make_test_file(fun_file_name, test_list):
             # Try block
             test_file.write('try\n')
             test_file.write('{\n')
+            count = 0
+            deferred_declarations = []
+            # Argument declarations
+            for Type in test.fun.arg_types:
+                if Type.strip()[len(Type.strip()) - 1] == '&':
+                    # we've got a reference and we can't
+                    # default initialize it
+                    deferred_declarations.append\
+                            ((Type, test.fun.arg_names[count]))
+                else:
+                    test_file.write(Type + " " + test.fun.arg_names[count] +
+                                    ';\n')
+                count += 1
+            # Setup
+            for setup_val in test.setup:
+                setup_no_paren = setup_val[1:-1]
+                for declaration in deferred_declarations:
+                    if setup_no_paren.strip().startswith(declaration[1]) and \
+                       not setup_no_paren.strip().startswith(declaration[1] +
+                                                             "."):
+                        setup_no_paren = declaration[0] + " " + setup_no_paren
+                test_file.write('\t' + setup_no_paren + ';\n')
             # Create variable of output type to store output
             test_file.write('\t' + test.fun.output_type + ' output;\n')
             # Function
@@ -110,8 +132,31 @@ def make_test_file(fun_file_name, test_list):
             else:
                 test_file.write('has_message = false;\n')
             test_file.write('exn_mess = ' + exn_message + ';\n')
+            # Try block
             test_file.write('try\n')
             test_file.write('{\n')
+            count = 0
+            deferred_declarations = []
+            # Argument declarations
+            for Type in test.fun.arg_types:
+                if Type.strip()[len(Type.strip()) - 1] == '&':
+                    # we've got a reference and we can't
+                    # default initialize it
+                    deferred_declarations.append\
+                            ((Type, test.fun.arg_names[count]))
+                else:
+                    test_file.write(Type + " " + test.fun.arg_names[count] +
+                                    ';\n')
+                count += 1
+            # Setup
+            for setup_val in test.setup:
+                setup_no_paren = setup_val[1:-1]
+                for declaration in deferred_declarations:
+                    if setup_no_paren.strip().startswith(declaration[1]) and \
+                       not setup_no_paren.strip().startswith(declaration[1] +
+                                                             "."):
+                        setup_no_paren = declaration[0] + " " + setup_no_paren
+                test_file.write('\t' + setup_no_paren + ';\n')
             # Function
             test_file.write(test.fun.name + '(' + input_string + ');\n')
             test_file.write('\tresult = false;\n')
