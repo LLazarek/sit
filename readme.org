@@ -1,4 +1,4 @@
-SIT: #+TITLE: Simple Interactive Testing
+#+TITLE: sit: Simple Interactive Testing
 #+AUTHOR: Team: 404 Team_Name_Not_Found
 
 Hack UMass IV, 2016
