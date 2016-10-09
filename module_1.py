@@ -47,9 +47,10 @@ def parse_code():
 
         # check regex for a function signature, if none keep moving down
         if found_test is 1:
-            func_grab = re.search("(([a-zA-Z_]*)? *[a-zA-Z0-9_]+ +[a-zA-Z0-9_]+\(.*\))", line)
+            func_grab = re.search("(([a-zA-Z_]*)? *[a-zA-Z0-9_]+" +
+                                  " +[a-zA-Z0-9_]+\(.*\))", line)
 
-            # when the function signature is reached append to tuple list with all tests
+            # if a function signature is found append to pair list and reset
             if func_grab is not None:
                 funct_sign = func_grab.group(1)
                 found_test = 0
