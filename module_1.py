@@ -68,8 +68,8 @@ def parse_code():
             found_test = 1
 
         # grab input test seperately
-        if input_grab is not None:
-            funct_tests.append(input_grab.group(0))
-            found_test = 1
+        # if input_grab is not None:
+        #     funct_tests.append(input_grab.group(0))
+        #     found_test = 1
 
     return (filename, pair_list)

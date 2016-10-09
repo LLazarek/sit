@@ -37,7 +37,8 @@ def make_test_file(fun_file_name, test_list):
         test_file = open(test_file_name, 'w+')
         # Add the include directive to the file
         test_file.write('#include "' + fun_file_name + '"\n\n')
-        test_file.write('#include <string>\n#include <vector>\n\n')
+        test_file.write('#include <string>\n#include <vector>\n' +
+                        '#include <exception>\n')
 
         # Overload the ostream operator for exceptions
         # We have to do this so that we can print arbitrary exception types
@@ -60,10 +61,8 @@ def make_test_file(fun_file_name, test_list):
                 # Create a string of the input arguments with correct commas
                 input_string = ''
                 for inarg in test.inputs:
-                        input_string += inarg
-                        # Add a comma and space if it's not the last input
-                        if inarg != test.inputs[len(test.inputs) - 1]:
-                                input_string += ', '
+                        input_string += inarg + ", "
+                input_string = input_string[:-2]
                 # TEST
                 if test.Type == module_2.Test_Type['test']:
                         expect_out = test.output[0]
@@ -88,6 +87,11 @@ def make_test_file(fun_file_name, test_list):
                         test_file.write('\tstd::cout << "Exception caught: "' +
                                         ' << e << std::endl;\n')
                         test_file.write('\tresult = false;\n')
+                        test_file.write('}\n')
+                        test_file.write('catch (...)\n')
+                        test_file.write('{\n')
+                        test_file.write('\tstd::cout << "Caught unexpected ' +
+                                        'exception" << std::endl;\n')
                         test_file.write('}\n\n')
                         test_file.write('if (!result)\n')
                         test_file.write('{\n')
@@ -118,6 +122,9 @@ def make_test_file(fun_file_name, test_list):
                         output_str = "passed without exception"
                         test_file.write('}\n')
                         # Catch block
+                        # cstr == c string == const char*
+                        if exn_type == 'cstr':
+                                exn_type = 'const char*'
                         test_file.write('catch (' + exn_type + '& e)\n')
                         test_file.write('{\n')
                         test_file.write('\tif (has_message)\n')
@@ -140,6 +147,11 @@ def make_test_file(fun_file_name, test_list):
                                         ' << e << std::endl;\n')
                         test_file.write('\tresult = false;\n')
                         output_str = "threw wrong exception"
+                        test_file.write('}\n')
+                        test_file.write('catch (...)\n')
+                        test_file.write('{\n')
+                        test_file.write('\tstd::cout << "Caught unexpected ' +
+                                        'exception" << std::endl;\n')
                         test_file.write('}\n\n')
                         test_file.write('if (!result)\n')
                         test_file.write('{\n')
@@ -177,21 +189,41 @@ def make_test_file(fun_file_name, test_list):
                         test_file.write('try\n')
                         test_file.write('{\n')
                         count = 0
+                        deferred_declarations = []
                         # Argument declarations
                         for Type in test.fun.arg_types:
-                                test_file.write(Type +
-                                                test.fun.arg_names[count] +
-                                                ';\n')
+                                if Type.strip()[len(Type.strip()) - 1] == '&':
+                                        # we've got a reference and we can't
+                                        # default initialize it
+                                        deferred_declarations.append\
+                                                ((Type,
+                                                  test.fun.arg_names[count]))
+                                else:
+                                        test_file.write(Type + " " +
+                                                        test.fun\
+                                                        .arg_names[count] +
+                                                        ';\n')
                                 count += 1
                         # Setup
                         for setup_val in test.setup:
                                 setup_no_paren = setup_val[1:-1]
+                                for declaration in deferred_declarations:
+                                        if setup_no_paren.strip()\
+                                                         .startswith(declaration[1]) and \
+                                        not setup_no_paren.strip().startswith(declaration[1] + "."):
+                                                setup_no_paren = declaration[0] + " " + setup_no_paren
                                 test_file.write('\t' + setup_no_paren + ';\n')
                         # Function
-                        test_file.write(test.fun.name + '(' +
-                                        input_string + ');\n')
+                        test_file.write('\t' + test.fun.name + '(')
+                        arg_string = ""
+                        for arg in test.fun.arg_names:
+                                arg_string += arg + ', '
+                        arg_string = arg_string[:-2]
+
+                        test_file.write(arg_string)
+                        test_file.write(');\n')
                         count = 0
-                        for in_to_check in test.inputs:
+                        for in_to_check in test.inputs: 
                                 test_file.write('\tif (' + in_to_check +
                                                 ' != ' + test.output[count] +
                                                 ')\n')
@@ -204,45 +236,34 @@ def make_test_file(fun_file_name, test_list):
                         test_file.write('\tstd::cout << "Exception caught: "' +
                                         ' << e << std::endl;\n')
                         test_file.write('\tresult = false;\n')
+                        test_file.write('}\n')
+                        test_file.write('catch (...)\n')
+                        test_file.write('{\n')
+                        test_file.write('\tstd::cout << "Caught unexpected ' +
+                                        'exception" << std::endl;\n')
                         test_file.write('}\n\n')
                         test_file.write('if (!result)\n')
                         test_file.write('{\n')
                         test_file.write('\ttest_suite_result = false;\n')
                         # Get lists of parameters, setups, expected mutations
-                        arg_string = ""
-                        setup_string = ""
-                        output_string = ""
-                        for arg in test.fun.arg_names:
-                                arg_string += arg
-                                if (arg != test.fun.arg_names[\
-                                        len(test.fun.arg_names) - 1]):
-                                        arg_string += ', '
-                        for setup in test.setup:
-                                setup_string += setup
-                                if (setup != test.setup[\
-                                        len(test.setup) - 1]):
-                                        setup_string += ', '
-                        for out in test.output:
-                                output_string += out
-                                if (out != test.output[\
-                                        len(test.output) - 1]):
-                                        output_string += ', '
+                        
                         test_file.write('\tfail_vec.push_back("' +
                                         test.fun.name + '(' + arg_string + ')' +
-                                        'with setups ' + setup_string +
-                                        'and expected outputs ' +
-                                        output_string + '");\n')
+                                        ' with values being checked=' +
+                                        str(test.inputs) +
+                                        ' and setup=' + str(test.setup) +
+                                        ' and expected outputs=' +
+                                        str(test.output) + '");\n')
                         test_file.write('}\n\n')
         # All cases done, write final result code
         test_file.write('if(test_suite_result)\n')
         test_file.write('\tstd::cout << "All tests passed." << std::endl;\n')
         test_file.write('else\n')
         test_file.write('{\n')
-        test_file.write('\tstd::cout << fail_vec.length() << " tests failed."' +
+        test_file.write('\tstd::cout << fail_vec.size() << " tests failed."' +
                         '<< " The following tests did not pass:" ' +
                         '<< std::endl;\n')
-        test_file.write('\tint i = 0;\n')
-        test_file.write('\tfor (i; i < fail_vec.length(); ++i)\n\t{\n')
+        test_file.write('\tfor (int i = 0; i < fail_vec.size(); ++i)\n\t{\n')
         test_file.write('\t\tstd::cout << fail_vec[i] << std::endl;\n\t}\n')
         test_file.write('}\n\n')
 

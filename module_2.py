@@ -107,14 +107,16 @@ def parse_func_args_into_lists(func_args_str):
     arg_types = []
     # split on comma
     arguments = func_args_str.split(',')
-    print("==%s==" % arguments)
     # for each argument
     for argument in arguments:
-        regex_result = re.search("(.*[^A-Za-z])([A-Za-z0-9_][A-Za-z0-9_]*)",
-                                 "()"
-                                 argument)
-        arg_types.append(regex_result.group(1).strip())
-        arg_names.append(regex_result.group(2).strip())
+        # Search the string backwards because it's much easier to
+        # find the end of a valid variable than the end of a valid type
+        regex_result = re.search("([A-Za-z0-9_]+)([*& ].+)",
+                                 argument[::-1])
+        # Since we reversed the original string, must reverse result strings
+        # AND the groupings (e.g: "x tni" -> 1:"x" 2:"tni")
+        arg_types.append(regex_result.group(2)[::-1].strip())
+        arg_names.append(regex_result.group(1)[::-1].strip())
         
     return (arg_names, arg_types)
 
@@ -332,9 +334,7 @@ if __name__ == '__main__':
                  ["int", "int"],
                  "int"))
 
-        f = extract_function_info("int fac_iter1(int res1, int n1_res){")
-        print("%s\n%s\n%s\n%s" %(f.name, f.arg_names, f.arg_types, f.output_type))
-        test(f,
+        test(extract_function_info("int fac_iter1(int res1, int n1_res){"),
              Fun("fac_iter1",
                  ["res1", "n1_res"],
                  ["int", "int"],
