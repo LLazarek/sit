@@ -1,9 +1,14 @@
 #!/bin/python3
-#   parse-grab.txt
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #   This file looks for the every test pattern and following
 #   function signature.
 #   @Author Owen McCormack
 #   @Date 10/8/16 12:13AM
+
 
 import sys
 import re

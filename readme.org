@@ -124,6 +124,9 @@ in the root directory of the repository. Doing so will create an executable file
   - Prompt for expected behavior in those cases
   - Generate tests based on such interactive sessions
 - =test-prop=: Property based testing
-  - In the spirit of QuickCheck, specify general properties or relationships that your function should hold
+  - In the spirit of [[http://www.cse.chalmers.se/~rjmh/QuickCheck/manual.html][QuickCheck]], specify general properties or relationships that your function should hold
   - Automatically generate large suites testing those properties
 
+* Licensing and Contributions
+Sit is licensed under the Mozilla Public License v2.0, the full text of which can be found at [[https://www.mozilla.org/en-US/MPL/2.0/]].
+If you would like to contribute to this project, please send us a pull request, report a bug, or create a new issue. We would love to hear from you.
